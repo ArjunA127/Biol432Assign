@@ -15,6 +15,8 @@ knitr::opts_chunk$set(echo = TRUE)
 Creator: Arjun Augustine
 Date: January 29, 2021
 
+This project takes an input dataset containing measurement data for *Fallopia* plants and outputs a version of the dataset with only 4 of the original variables, with one of them (total biomass) converted from milligrams to grams. It also writes a custom function to perform a user-specified operation ('Average', 'Sum', or 'Observations') on a user-specified vector. Here, this function is used on the newly wrangled *Fallopia* dataset. Below is a link to the repository containing all the files needed for this project to run.
+
 [Github repository link](https://github.com/ArjunA127/Biol432Assign3)
 
 ### Load Packages
