@@ -1,0 +1,109 @@
+---
+title: "Assignment Wk3"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Project Info
+
+Creator: Arjun Augustine
+Date: January 29, 2021
+
+[Github repository link](https://github.com/ArjunA127/Biol432Assign3)
+
+### Load Packages
+
+```{r message=FALSE}
+library(dplyr)
+library(knitr)
+```
+
+# Wrangle the Fallopia dataset
+
+```{r}
+# Load the FallopiaData.csv
+dat <- read.csv("InputData/FallopiaData.csv")
+
+# Make a new dataset that only keeps rows in FallopiaData.csv with greater than 60 grams of total biomass
+# Only keep the columns 'Total', 'Taxon', 'Scenario', 'Nutrients', in that order from left-right in the new dataset
+wran_dat <- dat %>%
+  filter(Total >= 60) %>%                   # Remove rows with ‘Total’ biomass < 60
+  select(Total, Taxon, Scenario, Nutrients) # Reorder the listed columns, remove all other columns
+
+head(wran_dat)                              # Display first 6 rows of new dataset (with total biomass in milligrams)
+
+# Replace the column "Total" with "TotalG", which converts the ‘Total’ biomass column from mg to grams
+wran_dat <- wran_dat %>% 
+  transmute(TotalG = Total/1000,            # Make a new column that coverts 'Total' from mg to g
+            Total = NULL,                   # Remove original 'Total' column
+            Taxon, Scenario, Nutrients)     # Preserve the order of the columns (i.e. keep 'TotalG' where 'Total' was)
+# Note: In the transmute function, it was also necessary to re-enter 'Taxon', 'Scenario', and 'Nutrients' to prevent them from being dropped from the dataset
+
+head(wran_dat)                              # Display first 6 rows of new dataset (with total biomass in grams)
+```
+
+
+# Custom function
+
+### Create Custom Function
+
+This function takes two inputs from the user: 1. a vector of data to process (e.g. column from a data.frame object) and 2. a string that defines what calculation to perform ('Average', 'Sum', or 'Observations'). This function ignores missing values when calculating 'Average' or 'Sum', and does not include missing values when counting observed values.
+
+```{r}
+cust.fun <- function(x, operator){
+  if (operator == "Average"){           # For string 'Average', output the mean of values in the given vector
+    out <- mean(x, na.rm = T)
+  }
+  else if (operator == "Sum"){          # For string 'Sum', output the sum of values in the vector
+    out <- sum(x, na.rm = T)
+  }
+  else if (operator == "Observations"){ # For string 'Observations', output number observed values in the vector
+    counter <- 0
+    for (i in 1:length(x)){
+      if (is.na(x[i]) == F){            # Ensure that any NA is not included when counting observed values
+        counter <- counter + 1
+      }
+    }
+    out <- counter
+  }
+  else{                                 # If any other string is inputted return an error
+    print("ERROR. Need to input one of the operations 'Average', 'Sum', or 'Observations'")
+  }
+  return(out)                           # Output the result for whichever operation the user asked for
+}
+```
+
+### Use the Custom Function
+
+Use the custom function to count the total number of observations in the 'Taxon' column of the newly wrangled dataset.
+
+```{r}
+cust.fun(wran_dat$Taxon, "Observations")
+```
+
+
+Use the custom function to calculate the average TotalG for each of the two Nutrient concentrations.
+
+```{r}
+# Calculate average TotalG for the low and high nutrient groups
+aTot_nutr <- wran_dat %>% group_by(Nutrients) %>% summarize(Mean = cust.fun(TotalG, "Average"))
+
+# Display a nice looking table for average total mass for each nutrient level
+kable(aTot_nutr,
+      caption = "Table 1. Average total biomass for different nutrient levels.", # Table caption
+      col.names = c("Nutrients", "Mean total mass (g)"),                         # Column headings
+      align = 'l')                                                               # Left-align the columns
+```
+# Export the wrangled datset
+
+Write (i.e. save) the new data to a file called "WrangledData.csv" in the Output folder. 
+```{r}
+write.csv(wran_dat, "Output/WrangledData.csv")
+```
+
