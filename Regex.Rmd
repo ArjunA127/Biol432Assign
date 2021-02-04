@@ -1,0 +1,55 @@
+---
+title: "Regex_assignment4_partI"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Project Info
+
+Creator: Arjun Augustine
+Date: February 5, 2021
+
+This program takes an input dataset containing limb measurement data for various species, and outputs a new version of the dataset where the full species names are replaced with their short form (e.g. *Panthera uncia* in the original Organism column becomes *P. uncia* in the new Sp column).
+
+Below is a link to the repository containing the files needed for this program to run:
+
+[Github repository link](https://github.com/ArjunA127/Biol432Assign3)
+
+# Load Packages and the 'measurements.csv" File
+
+```{r message=FALSE}
+library(dplyr)
+
+# Load the measurements file
+MData <- read.csv("InputData/measurements.csv")
+```
+
+# Manipulate the Data file
+
+## Add the Sp Column
+
+Use a dplyr command AND regular expression(s) to add a new column called Sp that shortens the genus name in the Organism column to only the first letter and period (e.g. Homo sapiens in the original Organism column becomes H. sapiens in the Sp column).
+
+```{r}
+# For the Sp column, replace the first word in each row of the Organism column with its first letter and a period
+MData <- MData %>% mutate(Sp = gsub("^(\\w)\\w+", "\\1.", Organism))
+head(MData)
+```
+## Make New Dataset
+
+Use a dplyr command to create a new dataset BUT with Sp column instead of the Organism column, moved to the beginning in place of the original Organism column.
+
+Save the dataset as a new file "MeasShort.csv".
+
+```{r}
+# Rearrange the measurements dataset, don't include the orginal Organism column
+shortMdat <- MData %>% select(Sp, Limb.width, Limb.length, Observer)
+head(shortMdat)
+
+# Save the new dataset
+write.csv(shortMdat, "Output/MeasShort.csv")
+```
+
